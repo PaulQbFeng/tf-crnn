@@ -101,19 +101,17 @@ class Params:
         self.alphabet_decoding = kwargs.get('alphabet_decoding', 'same')
         # Alphabet to use (from class Alphabet)
         self.alphabet = kwargs.get('alphabet')
-
         self.gpu = kwargs.get('gpu', '')
-
         self.output_model_dir = kwargs.get('output_model_dir')
         self.num_corpora = kwargs.get('num_corpora', 0)
         self._keep_prob_dropout = kwargs.get('keep_prob', 1)
-
         self.tfrecords_train = kwargs.get('tfrecords_train')
         self.tfrecords_eval = kwargs.get('tfrecords_eval')
         self.train_cnn = kwargs.get('train_cnn')
         self.top_paths = kwargs.get('top_paths')
         self.nb_logprob = kwargs.get('nb_logprob')
         self.dynamic_distortion = kwargs.get('dynamic_distortion')
+        self.is_resnet = kwargs.get('is_resnet', 0)
 
         assert self.optimizer in ['adam', 'rms', 'ada'], 'Unknown optimizer {}'.format(self.optimizer)
 
