@@ -113,7 +113,7 @@ class Params:
         self.dynamic_distortion = kwargs.get('dynamic_distortion')
         self.is_resnet = kwargs.get('is_resnet', 0)
 
-        assert self.optimizer in ['adam', 'rms', 'ada'], 'Unknown optimizer {}'.format(self.optimizer)
+        assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
 
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
 
