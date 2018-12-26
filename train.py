@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parameters = Params(**dict_params)
 
     os.makedirs(parameters.output_model_dir, exist_ok=True)
+
     model_params = {
         'Params': parameters,
     }

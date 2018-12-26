@@ -1,9 +1,9 @@
 {
-  "gpu": "0",
+  "gpu": "1",
   "n_epochs": 20,
   "save_interval": 5000.0,
-  "learning_rate": 0.001,
-  "learning_rate_decay" : 0.95,
+  "learning_rate": 0.01,
+  "learning_rate_decay" : 0,
   "learning_rate_steps" : 5000,
   "optimizer": "adam",
   "keep_prob": 0.8,
@@ -12,7 +12,7 @@
   "train_batch_size": 128,
   "input_shape": [ 32, 256 ],
   "num_corpora": 10,
-  "output_model_dir": "/mnt/nfs/data/paul/generative/2M_dilgrad_resnet_2018_12_19/",
+  "output_model_dir": "/mnt/nfs/data/paul/generative/2M_dilgrad_resnet_50_pretrained_2018_12_20/",
   "csv_delimiter": "\t",
   "tfrecords_train": "/notebooks/tfrecords_data/2M_dilgrad/train/*",
   "tfrecords_eval": "/notebooks/tfrecords_data/test_set/constat_pred_100_10_types_latin1_noaccent_byreport.tfrecords",
@@ -22,5 +22,6 @@
   "top_paths": 3,
   "nb_logprob": 20,
   "dynamic_distortion": 0,
-  "is_resnet": 1
+  "is_resnet": 1,
+  "width_down_sampling": 4
 }

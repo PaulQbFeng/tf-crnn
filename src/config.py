@@ -112,6 +112,7 @@ class Params:
         self.nb_logprob = kwargs.get('nb_logprob')
         self.dynamic_distortion = kwargs.get('dynamic_distortion')
         self.is_resnet = kwargs.get('is_resnet', 0)
+        self.width_down_sampling = kwargs.get('width_down_sampling')
 
         assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
 
