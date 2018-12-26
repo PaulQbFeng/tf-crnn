@@ -11,6 +11,7 @@
   "eval_batch_size": 128,
   "train_batch_size": 128,
   "input_shape": [ 32, 256 ],
+  "width_down_sampling": 4,
   "num_corpora": 10,
   "output_model_dir": "/mnt/nfs/data/paul/generative/2M_dilgrad_resnet_50_pretrained_2018_12_20/",
   "csv_delimiter": "\t",
@@ -22,6 +23,6 @@
   "top_paths": 3,
   "nb_logprob": 20,
   "dynamic_distortion": 0,
-  "is_resnet": 1,
-  "width_down_sampling": 4
+  "cnn_model": "resnet_50",
+  "cnn_pretained_ckpt_path": "/notebooks/pretrained_models/resnet_v1_50.ckpt"
 }

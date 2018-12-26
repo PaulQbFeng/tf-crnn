@@ -155,9 +155,12 @@ def deep_cnn(input_imgs: tf.Tensor, is_training: bool, is_resnet: bool=False, su
 
     # Following source code, not paper
 
-    if is_resnet:
-        with tf.variable_scope('resnet'):
+    if cnn_model == "resnet_50":
+        with tf.variable_scope('resnet_50'):
             cnn_net, _ = resnet_v1_50(input_tensor, is_training=is_training, global_pool=False, on_text=True)
+    elif cnn_model == "resnet_101":
+        with tf.variable_scope('resnet_101'):
+            cnn_net, _ = resnet_v1_101(input_tensor, is_training=is_training, global_pool=False, on_text=True)
     else:
         with tf.variable_scope('original_cnn'):
             cnn_net = original_cnn(input_tensor, input_channels, is_training=is_training, summaries=summaries)
@@ -249,23 +252,22 @@ def crnn_fn(features, labels, mode, params):
     parameters = params.get('Params')
     assert isinstance(parameters, Params)
 
-    exclude = ['deep_bidirectional_lstm']
-    variables_to_restore = tf.contrib.slim.get_variables_to_restore(exclude=exclude)
-    tf.train.init_from_checkpoint('/notebooks/pretrained_models/resnet_v1_50.ckpt',
-                              {v.name.split(':')[0]: v for v in variables_to_restore})
+    # Load pre-trained cnn model
+    if parameters.cnn_pretained_ckpt_path:
+        exclude = ['deep_bidirectional_lstm']
+        variables_to_restore = tf.contrib.slim.get_variables_to_restore(exclude=exclude)
+        tf.train.init_from_checkpoint(parameters.cnn_pretained_ckpt_path,
+                                  {v.name.split(':')[0]: v for v in variables_to_restore})
 
     if mode != tf.estimator.ModeKeys.TRAIN:
         parameters.keep_prob_dropout = 1.0
 
-    conv = deep_cnn(features['image'], (mode == tf.estimator.ModeKeys.TRAIN), parameters.is_resnet, summaries=False)
+    conv = deep_cnn(features['image'], (mode == tf.estimator.ModeKeys.TRAIN), parameters.cnn_model, summaries=False)
 
     logprob, raw_pred = deep_bidirectional_lstm(conv, features['corpus'], params=parameters, summaries=False)
 
     # Compute seq_len from image width
-    if parameters.is_resnet:
-        n_pools = parameters.width_down_sampling
-    else:
-        n_pools = CONST.DIMENSION_REDUCTION_W_POOLING  # 2x2 pooling in dimension W on layer 1 and 2
+    n_pools = parameters.width_down_sampling
 
     seq_len_inputs = tf.divide(features['image_width'], n_pools, name='seq_len_input_op') - 1
 

@@ -89,6 +89,8 @@ class Params:
             'Either both or none of (learning_rate_decay, learning_rate_steps) should be set'
 
         self.optimizer = kwargs.get('optimizer', 'adam')
+        assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
+
         self.n_epochs = kwargs.get('n_epochs', 50)
         self.epoch_size = kwargs.get('epoch_size', None) # in steps
         self.save_interval = kwargs.get('save_interval', 1e3)
@@ -96,9 +98,11 @@ class Params:
         # Shape of the image to be processed. The original with either be
         # resized or pad depending on its original size
         self.input_shape = kwargs.get('input_shape', (32, 100))
+
         # Either decode with the same alphabet or map capitals and lowercase
         # letters to the same symbol (lowercase)
         self.alphabet_decoding = kwargs.get('alphabet_decoding', 'same')
+
         # Alphabet to use (from class Alphabet)
         self.alphabet = kwargs.get('alphabet')
         self.gpu = kwargs.get('gpu', '')
@@ -111,11 +115,10 @@ class Params:
         self.top_paths = kwargs.get('top_paths')
         self.nb_logprob = kwargs.get('nb_logprob')
         self.dynamic_distortion = kwargs.get('dynamic_distortion')
-        self.is_resnet = kwargs.get('is_resnet', 0)
+        self.cnn_model = kwargs.get('cnn_model', 'original_cnn')
+        assert self.cnn_model in ['resnet_50', 'resnet_101', 'original_cnn'], 'Unknown cnn model {}'.format(self.cnn_model)
+
         self.width_down_sampling = kwargs.get('width_down_sampling')
-
-        assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
-
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
 
 
