@@ -118,6 +118,7 @@ class Params:
         self.cnn_model = kwargs.get('cnn_model', 'original_cnn')
         assert self.cnn_model in ['resnet_50', 'resnet_101', 'original_cnn'], 'Unknown cnn model {}'.format(self.cnn_model)
 
+        self.cnn_pretained_ckpt_path = kwargs.get('cnn_pretained_ckpt_path')
         self.width_down_sampling = kwargs.get('width_down_sampling')
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
 
