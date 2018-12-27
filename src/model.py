@@ -100,28 +100,29 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
             b_norm = tf.layers.batch_normalization(out, axis=-1,
                                                    training=is_training, name='batch-norm')
             conv5 = tf.nn.relu(b_norm)
-
+            pool6 = tf.nn.max_pool(conv5, [1, 2, 2, 1], strides=[1, 2, 1, 1],
+                                   padding='SAME', name='pool6')
             if summaries:
                 weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/weights:0'][0]
                 tf.summary.histogram('weights', weights)
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/bias:0'][0]
                 tf.summary.histogram('bias', bias)
 
-        # - conv6 - maxPool 2x1 (as source code, not paper)
-        with tf.variable_scope('layer6'):
-            W = weightVar([3, 3, 512, 512])
-            b = biasVar([512])
-            conv = conv2d(conv5, W)
-            out = tf.nn.bias_add(conv, b)
-            conv6 = tf.nn.relu(out)
-            pool6 = tf.nn.max_pool(conv6, [1, 2, 2, 1], strides=[1, 2, 1, 1],
-                                   padding='SAME', name='pool6')
+        # # - conv6 - maxPool 2x1 (as source code, not paper)
+        # with tf.variable_scope('layer6'):
+        #     W = weightVar([3, 3, 512, 512])
+        #     b = biasVar([512])
+        #     conv = conv2d(conv5, W)
+        #     out = tf.nn.bias_add(conv, b)
+        #     conv6 = tf.nn.relu(out)
+        #     pool6 = tf.nn.max_pool(conv6, [1, 2, 2, 1], strides=[1, 2, 1, 1],
+        #                            padding='SAME', name='pool6')
 
-            if summaries:
-                weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/weights:0'][0]
-                tf.summary.histogram('weights', weights)
-                bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/bias:0'][0]
-                tf.summary.histogram('bias', bias)
+        #     if summaries:
+        #         weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/weights:0'][0]
+        #         tf.summary.histogram('weights', weights)
+        #         bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/bias:0'][0]
+        #         tf.summary.histogram('bias', bias)
 
         # - conv 7 - w/batch-norm (as source code, not paper)
         with tf.variable_scope('layer7'):
@@ -144,7 +145,7 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
     return cnn_net
 
 
-def deep_cnn(input_imgs: tf.Tensor, is_training: bool, is_resnet: bool=False, summaries: bool=True) -> tf.Tensor:
+def deep_cnn(input_imgs: tf.Tensor, is_training: bool, cnn_model='original_cnn', summaries: bool=True) -> tf.Tensor:
     input_tensor = input_imgs
     if input_tensor.shape[-1] == 1:
         input_channels = 1
