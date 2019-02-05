@@ -24,5 +24,6 @@
   "nb_logprob": 20,
   "dynamic_distortion": 0,
   "cnn_model": "original_cnn",
-  "cnn_pretained_ckpt_path": 0
+  "cnn_pretained_ckpt_path": 0,
+  "make_predictions": 1
 }

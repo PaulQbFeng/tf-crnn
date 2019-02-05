@@ -120,6 +120,7 @@ class Params:
 
         self.cnn_pretained_ckpt_path = kwargs.get('cnn_pretained_ckpt_path')
         self.width_down_sampling = kwargs.get('width_down_sampling')
+        self.make_predictions = kwargs.get('make_predictions')
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
 
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 __author__ = 'solivr'
-import argparse
 import os
+import argparse
 import numpy as np
+import pandas as pd
 try:
     import better_exceptions
 except ImportError:
@@ -87,3 +88,8 @@ if __name__ == '__main__':
     estimator.export_savedmodel(os.path.join(parameters.output_model_dir, 'export'),
                                 preprocess_image_for_prediction(fixed_height=parameters.input_shape[0], min_width=10))
     print('Exported model to {}'.format(os.path.join(parameters.output_model_dir, 'export')))
+
+    if parameters.make_predictions:
+
+        training_name = os.path.basename(parameters.output_model_dir)
+        write_predictions_by_epoch(training_name, int(parameters.top_paths))
