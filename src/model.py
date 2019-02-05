@@ -91,38 +91,55 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer4/bias:0'][0]
                 tf.summary.histogram('bias', bias)
 
-        # - conv5 - w/batch-norm
-        with tf.variable_scope('layer5'):
-            W = weightVar([3, 3, 256, 512])
-            b = biasVar([512])
+        with tf.variable_scope('layerbonus'):
+            W = weightVar([3, 3, 256, 256])
+            b = biasVar([256])
             conv = conv2d(pool4, W)
             out = tf.nn.bias_add(conv, b)
             b_norm = tf.layers.batch_normalization(out, axis=-1,
                                                    training=is_training, name='batch-norm')
-            conv5 = tf.nn.relu(b_norm)
-            pool6 = tf.nn.max_pool(conv5, [1, 2, 2, 1], strides=[1, 2, 1, 1],
-                                   padding='SAME', name='pool6')
+            conv_bonus = tf.nn.relu(b_norm)
+            pool_bonus = tf.nn.max_pool(conv_bonus, [1, 2, 2, 1], strides=[1, 2, 2, 1],
+                                   padding='SAME', name='pool_bonus')
+
             if summaries:
                 weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/weights:0'][0]
                 tf.summary.histogram('weights', weights)
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/bias:0'][0]
                 tf.summary.histogram('bias', bias)
 
-        # # - conv6 - maxPool 2x1 (as source code, not paper)
-        # with tf.variable_scope('layer6'):
-        #     W = weightVar([3, 3, 512, 512])
-        #     b = biasVar([512])
-        #     conv = conv2d(conv5, W)
-        #     out = tf.nn.bias_add(conv, b)
-        #     conv6 = tf.nn.relu(out)
-        #     pool6 = tf.nn.max_pool(conv6, [1, 2, 2, 1], strides=[1, 2, 1, 1],
-        #                            padding='SAME', name='pool6')
 
-        #     if summaries:
-        #         weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/weights:0'][0]
-        #         tf.summary.histogram('weights', weights)
-        #         bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/bias:0'][0]
-        #         tf.summary.histogram('bias', bias)
+        # - conv5 - w/batch-norm
+        with tf.variable_scope('layer5'):
+            W = weightVar([3, 3, 256, 512])
+            b = biasVar([512])
+            conv = conv2d(pool_bonus, W)
+            out = tf.nn.bias_add(conv, b)
+            b_norm = tf.layers.batch_normalization(out, axis=-1,
+                                                   training=is_training, name='batch-norm')
+            conv5 = tf.nn.relu(b_norm)
+
+            if summaries:
+                weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/weights:0'][0]
+                tf.summary.histogram('weights', weights)
+                bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/bias:0'][0]
+                tf.summary.histogram('bias', bias)
+
+        # - conv6 - maxPool 2x1 (as source code, not paper)
+        with tf.variable_scope('layer6'):
+            W = weightVar([3, 3, 512, 512])
+            b = biasVar([512])
+            conv = conv2d(conv5, W)
+            out = tf.nn.bias_add(conv, b)
+            conv6 = tf.nn.relu(out)
+            pool6 = tf.nn.max_pool(conv6, [1, 2, 2, 1], strides=[1, 2, 1, 1],
+                                   padding='SAME', name='pool6')
+
+            if summaries:
+                weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/weights:0'][0]
+                tf.summary.histogram('weights', weights)
+                bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer6/bias:0'][0]
+                tf.summary.histogram('bias', bias)
 
         # - conv 7 - w/batch-norm (as source code, not paper)
         with tf.variable_scope('layer7'):
