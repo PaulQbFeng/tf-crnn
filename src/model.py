@@ -91,29 +91,11 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer4/bias:0'][0]
                 tf.summary.histogram('bias', bias)
 
-        with tf.variable_scope('layerbonus'):
-            W = weightVar([3, 3, 256, 256])
-            b = biasVar([256])
-            conv = conv2d(pool4, W)
-            out = tf.nn.bias_add(conv, b)
-            b_norm = tf.layers.batch_normalization(out, axis=-1,
-                                                   training=is_training, name='batch-norm')
-            conv_bonus = tf.nn.relu(b_norm)
-            pool_bonus = tf.nn.max_pool(conv_bonus, [1, 2, 2, 1], strides=[1, 2, 2, 1],
-                                   padding='SAME', name='pool_bonus')
-
-            if summaries:
-                weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/weights:0'][0]
-                tf.summary.histogram('weights', weights)
-                bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/bias:0'][0]
-                tf.summary.histogram('bias', bias)
-
-
         # - conv5 - w/batch-norm
         with tf.variable_scope('layer5'):
             W = weightVar([3, 3, 256, 512])
             b = biasVar([512])
-            conv = conv2d(pool_bonus, W)
+            conv = conv2d(pool4, W)
             out = tf.nn.bias_add(conv, b)
             b_norm = tf.layers.batch_normalization(out, axis=-1,
                                                    training=is_training, name='batch-norm')
@@ -201,13 +183,13 @@ def deep_bidirectional_lstm(inputs: tf.Tensor, corpora: tf.Tensor, params: Param
 
     # add the corpora to all input times; TODO: what values should we use for one-hot? (0,1) ?
 
-    with tf.name_scope('corpus_concat'):
-        corpora = tf.expand_dims(corpora, axis=1) # add the time dimension
-        corpora = tf.one_hot(corpora, depth=params.num_corpora, dtype=inputs.dtype, name='corpus_to_onehot')
-        multiples = tf.stack([1, tf.shape(inputs)[1], 1])     #tf.shape(input)[1] = width
+    # with tf.name_scope('corpus_concat'):
+    #     corpora = tf.expand_dims(corpora, axis=1) # add the time dimension
+    #     corpora = tf.one_hot(corpora, depth=params.num_corpora, dtype=inputs.dtype, name='corpus_to_onehot')
+    #     multiples = tf.stack([1, tf.shape(inputs)[1], 1])     #tf.shape(input)[1] = width
 
-        corpora = tf.tile(corpora, multiples)
-        inputs = tf.concat((corpora, inputs), axis=2, name='concat_corpus')
+    #     corpora = tf.tile(corpora, multiples)
+    #     inputs = tf.concat((corpora, inputs), axis=2, name='concat_corpus')
 
     with tf.name_scope('deep_bidirectional_lstm'):
         # Forward direction cells
