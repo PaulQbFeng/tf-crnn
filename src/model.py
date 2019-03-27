@@ -3,7 +3,7 @@ __author__ = 'solivr'
 
 
 import tensorflow as tf
-from nets.resnet_v1 import resnet_v1_101, resnet_v1_50
+# from nets.resnet_v1 import resnet_v1_101, resnet_v1_50
 from tensorflow.contrib.rnn import BasicLSTMCell, LSTMCell
 from tensorflow.contrib.cudnn_rnn import CudnnLSTM
 from .decoding import get_words_from_chars
@@ -91,29 +91,11 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer4/bias:0'][0]
                 tf.summary.histogram('bias', bias)
 
-        with tf.variable_scope('layerbonus'):
-            W = weightVar([3, 3, 256, 256])
-            b = biasVar([256])
-            conv = conv2d(pool4, W)
-            out = tf.nn.bias_add(conv, b)
-            b_norm = tf.layers.batch_normalization(out, axis=-1,
-                                                   training=is_training, name='batch-norm')
-            conv_bonus = tf.nn.relu(b_norm)
-            pool_bonus = tf.nn.max_pool(conv_bonus, [1, 2, 2, 1], strides=[1, 2, 2, 1],
-                                   padding='SAME', name='pool_bonus')
-
-            if summaries:
-                weights = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/weights:0'][0]
-                tf.summary.histogram('weights', weights)
-                bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer5/bias:0'][0]
-                tf.summary.histogram('bias', bias)
-
-
         # - conv5 - w/batch-norm
         with tf.variable_scope('layer5'):
             W = weightVar([3, 3, 256, 512])
             b = biasVar([512])
-            conv = conv2d(pool_bonus, W)
+            conv = conv2d(pool4, W)
             out = tf.nn.bias_add(conv, b)
             b_norm = tf.layers.batch_normalization(out, axis=-1,
                                                    training=is_training, name='batch-norm')
