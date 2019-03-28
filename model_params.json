@@ -1,7 +1,7 @@
 {
-  "gpu": "1",
+  "gpu": "0",
   "n_epochs": 20,
-  "save_interval": 5000.0,
+  "save_interval": 2000.0,
   "learning_rate": 0.001,
   "learning_rate_decay" : 0.95,
   "learning_rate_steps" : 5000,

@@ -74,6 +74,8 @@ class Alphabet:
                                                          len(Digits) + len(LettersLowercase) +
                                                          len(Symbols) + 1))
 
+class ConfigError(Exception):
+    pass
 
 class Params:
     def __init__(self, **kwargs):
@@ -85,8 +87,9 @@ class Params:
         # Learning rate decay for exponential learning rate. Both should be set or unset
         self.learning_rate_decay = kwargs.get('learning_rate_decay')
         self.learning_rate_steps = kwargs.get('learning_rate_steps')
-        assert not (self.learning_rate_decay is not None) ^ (self.learning_rate_steps is not None),\
-            'Either both or none of (learning_rate_decay, learning_rate_steps) should be set'
+        if (self.learning_rate_decay is not None) ^ (self.learning_rate_steps is not None):
+            raise ConfigError('Either both or none of '
+                              '(learning_rate_decay, learning_rate_steps) should be set')
 
         self.optimizer = kwargs.get('optimizer', 'adam')
         assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
@@ -121,6 +124,16 @@ class Params:
         self.cnn_pretained_ckpt_path = kwargs.get('cnn_pretained_ckpt_path')
         self.width_down_sampling = kwargs.get('width_down_sampling')
         self.make_predictions = kwargs.get('make_predictions')
+        try:
+            if self.dynamic_distortion and int(self.gpu) < 0:
+                raise ConfigError('Using dynamic_distortion requires GPU.'
+                                  ' Otherwise learning would be even slower.')
+        except ValueError:
+            # self.gpu is not convertible to int
+            pass
+
+        if self.optimizer not in ['adam', 'rms', 'ada']:
+            raise ConfigError(f'Unknown optimizer {self.optimizer}')
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
 
 

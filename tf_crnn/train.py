@@ -9,12 +9,12 @@ try:
 except ImportError:
     pass
 import tensorflow as tf
-from eval_dataframe import write_predictions_by_epoch
-from src.model import crnn_fn
-from src.data_handler import make_input_fn
-from src.data_handler import preprocess_image_for_prediction
 
-from src.config import Params, import_params_from_json
+from .model import crnn_fn
+from .data_handler import make_input_fn
+from .data_handler import preprocess_image_for_prediction
+
+from .config import Params, import_params_from_json
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train the model according to the specified config in the JSON. '
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         save_checkpoints_steps=parameters.save_interval,
         session_config=config_sess,
         save_checkpoints_secs=None,
-        save_summary_steps=2000,
+        save_summary_steps=1000,
         model_dir=parameters.output_model_dir
     )
 
@@ -66,6 +66,7 @@ if __name__ == '__main__':
             estimator.train(input_fn=make_input_fn(parameters.tfrecords_train,
                                                    parameters.train_batch_size,
                                                    parameters.input_shape,
+                                                   data_augmentation=True,
                                                    dynamic_distortion=parameters.dynamic_distortion,
                                                    repeat=False),
 
@@ -74,6 +75,7 @@ if __name__ == '__main__':
             estimator.evaluate(input_fn=make_input_fn(parameters.tfrecords_eval,
                                                       parameters.eval_batch_size,
                                                       parameters.input_shape,
+                                                      data_augmentation=False,
                                                       dynamic_distortion=False,
                                                       repeat=False)
                                )

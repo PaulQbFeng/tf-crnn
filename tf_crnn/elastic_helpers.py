@@ -12,19 +12,20 @@ def sample(img, coords):
     shape = tf.shape(img)[1:3]   # h, w, c
     batch = tf.shape(img)[0]
     shape2 = tf.shape(coords)[1:3]  # h2, w2
-    #assert None not in shape2, coords.get_shape()
-    max_coor = tf.cast(tf.stack([ shape[0] - 1, shape[1] - 1]),tf.float32)
 
-    coords = tf.clip_by_value(coords, 0., tf.cast(shape[1] - 1, tf.float32))  # borderMode==repeat
+    # clip each dimension individually
+    coords_y, coords_x = tf.split(coords, 2, axis=3)
+    coords_y = tf.clip_by_value(coords_y, 0., tf.cast(shape[0] - 1, tf.float32))
+    coords_x = tf.clip_by_value(coords_x, 0., tf.cast(shape[1] - 1, tf.float32))
+    coords = tf.concat([coords_y, coords_x], axis=3)
     coords = tf.to_int32(coords)
 
     batch_index = tf.range(batch, dtype=tf.int32)
     batch_index = tf.reshape(batch_index, [-1, 1, 1, 1])
     batch_index = tf.tile(batch_index, [1, shape2[0], shape2[1], 1])    # bxh2xw2x1
     indices = tf.concat([batch_index, coords], axis=3) # bxh2xw2x3
-    print("indices",indices)
     sampled = tf.gather_nd(img, indices)
-    print("sampled",sampled)
+
     return tf.cast(sampled,tf.float32)
 
 def ImageSample(inputs, borderMode='repeat'):
@@ -134,66 +135,40 @@ def gaussian_filter_tf(image, sigma, name='Gaussian'):
     return tf.squeeze((output), [0,-1]) #Specify first and last dimension to be removed
 
 def tf_distortion_maps(img: tf.Tensor, batch_size: int = 128) -> tf.Tensor:
-
-    #Input image (N,h,w,1)
-
+    """ Input image (N,h,w,1)"""
     with tf.device("/device:GPU:0"):
+        orig_shape = img.shape.as_list()
+        height, width = orig_shape[1:3]
 
-        orig_shape = img.shape.as_list() #output int32
-
-        print("input shape:", img.get_shape().as_list())
-
-        alpha = tf.cast(orig_shape[1],tf.float32)
-
+        # the magnitute of the deformation, alpha, depends on the size of the img
+        # we found a good number is the height of the image
+        alpha = tf.cast(height,tf.float32)
         sigma = tf.abs(tf.random_normal([1], 8, 2))
-
         #sigma = tf.cond(sigma < 4 , lambda: 4 , lambda: sigma)
 
-        dispx = tf.random_uniform([orig_shape[1], orig_shape[2], 1], -1, 1) #Output tensor of shape (h,w,1) with values between -1 and 1
+        dispx = tf.random_uniform([height, width, 1], minval=-1, maxval=1)
+        dispy = tf.random_uniform([height, width, 1], minval=-1, maxval=1)
 
-        print("dispx", dispx.get_shape().as_list())
-
-
-        dispy = tf.random_uniform([orig_shape[1], orig_shape[2], 1], -1, 1)
-
-
+        # TODO: since sigma comes from a random tensor, make sure it has the same
+        # value in both places (normally the tensor yields a new val at each eval)
         dispx = alpha * gaussian_filter_tf(dispx, sigma)
-        dispy = alpha * gaussian_filter_tf(dispy, sigma) # TODO: make sure you use the same sigma ?
+        dispy = alpha * gaussian_filter_tf(dispy, sigma)
 
-    # use the broadcasting to achieve the same as meshgrid
-
-        xs = tf.range(0, tf.cast(orig_shape[2],tf.float32), dtype=tf.float32)
-        ys = tf.range(0, tf.cast(orig_shape[1],tf.float32), dtype=tf.float32)
-
+        # get the real coordinates to which we add the displacements
+        xs = tf.range(0, tf.cast(width,tf.float32), dtype=tf.float32)
+        ys = tf.range(0, tf.cast(height,tf.float32), dtype=tf.float32)
+        # use the broadcasting to achieve the same as meshgrid
         ys = tf.expand_dims(ys, axis=1)
 
         dispx += xs
-        #print(tf.shape(xs).eval())
         dispy += ys
-        #print(tf.shape(ys).eval())
-
         coords = tf.stack([dispy, dispx], axis=2)
 
-        print("coords first stack ", coords.get_shape().as_list())
-
-        #print("coords shape before expand :", tf.shape(coords).eval())
-        # batch of 1
-    #     coords = tf.expand_dims(coords, axis=0)
-    #     print("coords shape after expand :", tf.shape(coords).eval())
-
+        # stack coords to have dimension (B,H,W,2)
         coords = [coords for i in range(batch_size)]
-
-        coords = tf.stack(coords)  # stack coords to have dimension (B,H,W,2)
-
-        print("coords stacked ", coords.get_shape().as_list())
-
-        #print("coords shape final:" , tf.shape(coords).eval())
-
-        #img = tf.expand_dims(img, axis=0)   #The image is dimension 3 (grayscale) so we add 1 dimension
+        coords = tf.stack(coords)
 
     img = ImageSample((img,coords))
-    print("dynamic image shape", img.get_shape().as_list())
-
     return img
 
 def normalize_text(text):
