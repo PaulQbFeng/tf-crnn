@@ -3,3 +3,4 @@ model_params.json
 __pycache__/
 .DS_Store
 ._*
+.idea/
