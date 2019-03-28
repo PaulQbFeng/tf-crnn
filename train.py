@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 import tensorflow as tf
+from eval_dataframe import write_predictions_by_epoch
 from src.model import crnn_fn
 from src.data_handler import make_input_fn
 from src.data_handler import preprocess_image_for_prediction

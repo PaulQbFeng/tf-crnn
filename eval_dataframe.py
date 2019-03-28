@@ -84,11 +84,13 @@ def write_predictions_by_epoch(training_name, nb_paths):
     Store the dataframe in .tsv format and raw predictions/log probabilities in numpy files.
     -> /notebooks/report_result/
     """
-    examples = pd.read_csv('/notebooks/accident-annotations/result_100_10_types_latin1_byreport.tsv',
+
+    source = '/notebooks/' # docker -v mapping on /home/paul.
+    examples = pd.read_csv(source + 'accident-annotations/result_100_10_types_latin1_byreport.tsv',
                             encoding = 'latin1', sep='\t')
 
-    os.makedirs('/notebooks/report_result/{}/pred_by_epoch'.format(training_name), exist_ok=True)
-    os.chmod('/notebooks/report_result/{}'.format(training_name), 0o767) #right to add files from local machine
+    os.makedirs(source + 'report_result/{}/pred_by_epoch'.format(training_name), exist_ok=True)
+    os.chmod(source + 'report_result/{}'.format(training_name), 0o767) #right to add files from local machine
 
     model_epochs = sorted(glob('/mnt/nfs/data/paul/generative/{}/export/*'.format(training_name)),
                       key=lambda x: int(os.path.basename(x)))[:-1] #sort Remove last one cause it's a duplicate
@@ -103,10 +105,10 @@ def write_predictions_by_epoch(training_name, nb_paths):
             print("Predictions after {} epoch of training\n".format(i+1))
             example, rawpred, logprob = eval_model(with_elastic_model, examples, nb_paths, visual=False)
 
-            example.to_csv('/notebooks/report_result/{name}/pred_by_epoch/examples_{name}_epoch_{}.tsv'
+            example.to_csv(source + 'report_result/{name}/pred_by_epoch/examples_{name}_epoch_{}.tsv'
                             .format(i+1, name=training_name), sep='\t', encoding='latin1',index=False)
 
-            np.savez_compressed("/notebooks/report_result/{name}/pred_by_epoch/examples_{name}_epoch_{}.npz"
+            np.savez_compressed(source + "report_result/{name}/pred_by_epoch/examples_{name}_epoch_{}.npz"
                      .format(i+1, name=training_name), rawpred_array=rawpred, logprob_array=logprob)
 
             sess.close()
