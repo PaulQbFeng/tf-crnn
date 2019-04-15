@@ -89,10 +89,9 @@ def write_predictions_by_epoch(training_name, nb_paths):
     examples = pd.read_csv(source + 'accident-annotations/result_100_10_types_latin1_byreport.tsv',
                             encoding = 'latin1', sep='\t')
 
-    os.makedirs(source + 'report_result/{}/pred_by_epoch'.format(training_name), exist_ok=True)
-    os.chmod(source + 'report_result/{}'.format(training_name), 0o767) #right to add files from local machine
+    os.makedirs(source + 'report_result/{}/pred_by_epoch'.format(training_name), mode=0o767, exist_ok=True)
 
-    model_epochs = sorted(glob('/mnt/nfs/data/paul/generative/{}/export/*'.format(training_name)),
+    model_epochs = sorted(glob('/mnt/nfs/data/qiyang/generative/{}/export/*'.format(training_name)),
                       key=lambda x: int(os.path.basename(x)))[:-1] #sort Remove last one cause it's a duplicate
 
     for i,model in enumerate(model_epochs):
@@ -116,7 +115,7 @@ def write_predictions_by_epoch(training_name, nb_paths):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-name', '--training_name', type=str, required=True, help='name of the training model')
+    parser.add_argument('-nm', '--training_name', type=str, required=True, help='name of the training model')
     parser.add_argument('-np', '--nb_paths', type=str, required=True, help='number of beam search path')
     parser.add_argument('-g','--gpu', type=str, required=True, help='name of the tfrecords filename (add train or valid in the name)')
 
