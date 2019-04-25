@@ -4,10 +4,9 @@ __author__ = 'solivr'
 
 import tensorflow as tf
 # from nets.resnet_v1 import resnet_v1_101, resnet_v1_50
-from tensorflow.contrib.rnn import BasicLSTMCell, LSTMCell
-from tensorflow.contrib.cudnn_rnn import CudnnLSTM
+from .config import Params
 from .decoding import get_words_from_chars
-from .config import  Params, CONST
+from tensorflow.contrib.rnn import BasicLSTMCell, LSTMCell
 
 
 def weightVar(shape, mean=0.0, stddev=0.02, name='weights'):
@@ -41,7 +40,6 @@ def original_cnn(input_tensor: tf.Tensor, input_channels, is_training, summaries
                 tf.summary.histogram('weights', weights)
                 bias = [var for var in tf.global_variables() if var.name == 'original_cnn/layer1/bias:0'][0]
                 tf.summary.histogram('bias', bias)
-
 
         # - conv2 - maxPool 2x2
         with tf.variable_scope('layer2'):
@@ -186,7 +184,7 @@ def deep_bidirectional_lstm(inputs: tf.Tensor, corpora: tf.Tensor, params: Param
     with tf.name_scope('corpus_concat'):
         corpora = tf.expand_dims(corpora, axis=1) # add the time dimension
         corpora = tf.one_hot(corpora, depth=params.num_corpora, dtype=inputs.dtype, name='corpus_to_onehot')
-        multiples = tf.stack([1, tf.shape(inputs)[1], 1])     #tf.shape(input)[1] = width
+        multiples = tf.stack([1, tf.shape(inputs)[1], 1])     # tf.shape(input)[1] = width
 
         corpora = tf.tile(corpora, multiples)
         inputs = tf.concat((corpora, inputs), axis=2, name='concat_corpus')
@@ -316,7 +314,6 @@ def crnn_fn(features, labels, mode, params):
         maintain_averages_op = ema.apply([loss_ctc])
         loss_ema = ema.average(loss_ctc)
 
-
         # Train op
         # --------
         if parameters.learning_rate_decay:
@@ -325,7 +322,6 @@ def crnn_fn(features, labels, mode, params):
                                                        parameters.learning_rate_decay, staircase=True)
         else:
             learning_rate = tf.constant(parameters.learning_rate)
-
 
         if parameters.optimizer == 'ada':
             optimizer = tf.train.AdadeltaOptimizer(learning_rate)
@@ -413,5 +409,4 @@ def crnn_fn(features, labels, mode, params):
         eval_metric_ops=eval_metric_ops,
         export_outputs=export_outputs,
         scaffold=tf.train.Scaffold()
-        # scaffold=tf.train.Scaffold(init_fn=None)  # Specify init_fn to restore from previous model
     )

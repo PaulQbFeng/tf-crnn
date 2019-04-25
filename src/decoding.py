@@ -2,6 +2,7 @@
 __author__ = 'solivr'
 
 import tensorflow as tf
+
 from typing import List
 
 

@@ -1,5 +1,12 @@
 import tensorflow as tf
 
+
+def normalize_text(text):
+    """Remove accents and other stuff from text"""
+    return ''.join((c for c in unicodedata.normalize('NFD', text) \
+                    if unicodedata.category(c) != 'Mn'))
+
+
 def sample(img, coords):
     """
     Args:
@@ -12,7 +19,7 @@ def sample(img, coords):
     shape = tf.shape(img)[1:3]   # h, w, c
     batch = tf.shape(img)[0]
     shape2 = tf.shape(coords)[1:3]  # h2, w2
-    #assert None not in shape2, coords.get_shape()
+    # assert None not in shape2, coords.get_shape()
     max_coor = tf.cast(tf.stack([ shape[0] - 1, shape[1] - 1]),tf.float32)
 
     coords = tf.clip_by_value(coords, 0., tf.cast(shape[1] - 1, tf.float32))  # borderMode==repeat
@@ -21,11 +28,12 @@ def sample(img, coords):
     batch_index = tf.range(batch, dtype=tf.int32)
     batch_index = tf.reshape(batch_index, [-1, 1, 1, 1])
     batch_index = tf.tile(batch_index, [1, shape2[0], shape2[1], 1])    # bxh2xw2x1
-    indices = tf.concat([batch_index, coords], axis=3) # bxh2xw2x3
-    print("indices",indices)
+    indices = tf.concat([batch_index, coords], axis=3)  # bxh2xw2x3
+    print("indices", indices)
     sampled = tf.gather_nd(img, indices)
-    print("sampled",sampled)
-    return tf.cast(sampled,tf.float32)
+    print("sampled", sampled)
+    return tf.cast(sampled, tf.float32)
+
 
 def ImageSample(inputs, borderMode='repeat'):
     """
@@ -45,9 +53,9 @@ def ImageSample(inputs, borderMode='repeat'):
     assert image.get_shape().ndims == 4 and mapping.get_shape().ndims == 4
     input_shape = tf.shape(image)[1:3]
 
-    print("input_image_Sample" ,image.get_shape().as_list())
-    print("input_mapping_Sample" ,mapping.get_shape().as_list())
-    #assert None not in input_shape
+    print("input_image_Sample", image.get_shape().as_list())
+    print("input_mapping_Sample", mapping.get_shape().as_list())
+    # assert None not in input_shape
 
     "Images in ImageSample layer must have fully-defined shape"
     assert borderMode in ['repeat', 'constant']
@@ -128,18 +136,19 @@ def gaussian_filter_tf(image, sigma, name='Gaussian'):
             kernel = _gauss_kernel(sigma, image.shape.as_list()[-1])
         image = tf.expand_dims(image, 0) # add the batch component
         output = tf.nn.depthwise_conv2d(image, kernel, [1,1,1,1], padding='SAME')
-        #print("gaussian shape before squeeze", tf.shape(output).eval())
-        #print("gaussian output:", output.get_shape().ndims)
+        # print("gaussian shape before squeeze", tf.shape(output).eval())
+        # print("gaussian output:", output.get_shape().ndims)
 
-    return tf.squeeze((output), [0,-1]) #Specify first and last dimension to be removed
+    return tf.squeeze((output), [0,-1])  # Specify first and last dimension to be removed
+
 
 def tf_distortion_maps(img: tf.Tensor, batch_size: int = 128) -> tf.Tensor:
 
-    #Input image (N,h,w,1)
+    # Input image (N,h,w,1)
 
     with tf.device("/device:GPU:0"):
 
-        orig_shape = img.shape.as_list() #output int32
+        orig_shape = img.shape.as_list() # output int32
 
         print("input shape:", img.get_shape().as_list())
 
@@ -147,20 +156,18 @@ def tf_distortion_maps(img: tf.Tensor, batch_size: int = 128) -> tf.Tensor:
 
         sigma = tf.abs(tf.random_normal([1], 8, 2))
 
-        #sigma = tf.cond(sigma < 4 , lambda: 4 , lambda: sigma)
+        # sigma = tf.cond(sigma < 4 , lambda: 4 , lambda: sigma)
 
-        dispx = tf.random_uniform([orig_shape[1], orig_shape[2], 1], -1, 1) #Output tensor of shape (h,w,1) with values between -1 and 1
+        dispx = tf.random_uniform([orig_shape[1], orig_shape[2], 1], -1, 1) # Output tensor of shape (h,w,1) with values between -1 and 1
 
         print("dispx", dispx.get_shape().as_list())
 
-
         dispy = tf.random_uniform([orig_shape[1], orig_shape[2], 1], -1, 1)
 
-
         dispx = alpha * gaussian_filter_tf(dispx, sigma)
-        dispy = alpha * gaussian_filter_tf(dispy, sigma) # TODO: make sure you use the same sigma ?
+        dispy = alpha * gaussian_filter_tf(dispy, sigma)  # TODO: make sure you use the same sigma ?
 
-    # use the broadcasting to achieve the same as meshgrid
+        # use the broadcasting to achieve the same as meshgrid
 
         xs = tf.range(0, tf.cast(orig_shape[2],tf.float32), dtype=tf.float32)
         ys = tf.range(0, tf.cast(orig_shape[1],tf.float32), dtype=tf.float32)
@@ -168,36 +175,27 @@ def tf_distortion_maps(img: tf.Tensor, batch_size: int = 128) -> tf.Tensor:
         ys = tf.expand_dims(ys, axis=1)
 
         dispx += xs
-        #print(tf.shape(xs).eval())
         dispy += ys
-        #print(tf.shape(ys).eval())
 
         coords = tf.stack([dispy, dispx], axis=2)
 
         print("coords first stack ", coords.get_shape().as_list())
 
-        #print("coords shape before expand :", tf.shape(coords).eval())
         # batch of 1
-    #     coords = tf.expand_dims(coords, axis=0)
-    #     print("coords shape after expand :", tf.shape(coords).eval())
+        # coords = tf.expand_dims(coords, axis=0)
+        # print("coords shape after expand :", tf.shape(coords).eval())
 
         coords = [coords for i in range(batch_size)]
-
         coords = tf.stack(coords)  # stack coords to have dimension (B,H,W,2)
 
         print("coords stacked ", coords.get_shape().as_list())
 
-        #print("coords shape final:" , tf.shape(coords).eval())
+        # print("coords shape final:" , tf.shape(coords).eval())
+        # img = tf.expand_dims(img, axis=0)   #The image is dimension 3 (grayscale) so we add 1 dimension
 
-        #img = tf.expand_dims(img, axis=0)   #The image is dimension 3 (grayscale) so we add 1 dimension
-
-    img = ImageSample((img,coords))
+    img = ImageSample((img, coords))
     print("dynamic image shape", img.get_shape().as_list())
 
     return img
 
-def normalize_text(text):
-    """Remove accents and other stuff from text"""
-    return ''.join((c for c in unicodedata.normalize('NFD', text) \
-                    if unicodedata.category(c) != 'Mn'))
 

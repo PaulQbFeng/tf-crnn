@@ -4,20 +4,21 @@ __author__ = 'solivr'
 import os
 import json
 import time
+
 from glob import glob
 
 
 class CONST:
-    DIMENSION_REDUCTION_W_POOLING = 2*2  # 2x2 pooling in dimension W on layer 1 and 2
+    DIMENSION_REDUCTION_W_POOLING = 2 * 2  # 2x2 pooling in dimension W on layer 1 and 2
 
 
 class Alphabet:
-    DiacriticalLower = 'çéèàùêâôûîëï' # 12 these were found in the training set
-    DiacriticalUpper = 'È'            # 1
+    DiacriticalLower = 'çéèàùêâôûîëï'  # 12 these were found in the training set
+    DiacriticalUpper = 'È'  # 1
     LettersLowercase = 'abcdefghijklmnopqrstuvwxyz'  # 26 + 12
-    LettersCapitals  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 26 + 1
-    Digits = '0123456789'    # 10
-    Symbols = " '.,-/_"               #old: " '.,:-()/*°"  # 11
+    LettersCapitals = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 26 + 1
+    Digits = '0123456789'  # 10
+    Symbols = " '.,-/_"  # old: " '.,:-()/*°"  # 11
     DecodingList = ['same', 'lowercase']
 
     BLANK_SYMBOL = '$'
@@ -85,14 +86,14 @@ class Params:
         # Learning rate decay for exponential learning rate. Both should be set or unset
         self.learning_rate_decay = kwargs.get('learning_rate_decay')
         self.learning_rate_steps = kwargs.get('learning_rate_steps')
-        assert not (self.learning_rate_decay is not None) ^ (self.learning_rate_steps is not None),\
+        assert not (self.learning_rate_decay is not None) ^ (self.learning_rate_steps is not None), \
             'Either both or none of (learning_rate_decay, learning_rate_steps) should be set'
 
         self.optimizer = kwargs.get('optimizer', 'adam')
         assert self.optimizer in ['adam', 'rms', 'ada', 'momentum'], 'Unknown optimizer {}'.format(self.optimizer)
 
         self.n_epochs = kwargs.get('n_epochs', 50)
-        self.epoch_size = kwargs.get('epoch_size', None) # in steps
+        self.epoch_size = kwargs.get('epoch_size', None)  # in steps
         self.save_interval = kwargs.get('save_interval', 1e3)
 
         # Shape of the image to be processed. The original with either be
@@ -116,13 +117,13 @@ class Params:
         self.nb_logprob = kwargs.get('nb_logprob')
         self.dynamic_distortion = kwargs.get('dynamic_distortion')
         self.cnn_model = kwargs.get('cnn_model', 'original_cnn')
-        assert self.cnn_model in ['resnet_50', 'resnet_101', 'original_cnn'], 'Unknown cnn model {}'.format(self.cnn_model)
+        assert self.cnn_model in ['resnet_50', 'resnet_101', 'original_cnn'], 'Unknown cnn model {}'.format(
+            self.cnn_model)
 
         self.cnn_pretained_ckpt_path = kwargs.get('cnn_pretained_ckpt_path')
         self.width_down_sampling = kwargs.get('width_down_sampling')
         self.make_predictions = kwargs.get('make_predictions')
         self._assign_alphabet(alphabet_decoding_list=Alphabet.DecodingList)
-
 
     def export_experiment_params(self):
         if not os.path.isdir(self.output_model_dir):
@@ -202,8 +203,7 @@ class Params:
         return self._alphabet_decoding_codes
 
 
-def import_params_from_json(model_directory: str=None, json_filename: str=None) -> dict:
-
+def import_params_from_json(model_directory: str = None, json_filename: str = None) -> dict:
     assert not all(p is None for p in [model_directory, json_filename]), 'One argument at least should not be None'
 
     if model_directory:

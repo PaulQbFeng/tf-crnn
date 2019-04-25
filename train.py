@@ -2,19 +2,18 @@
 __author__ = 'solivr'
 import os
 import argparse
-import numpy as np
-import pandas as pd
 try:
     import better_exceptions
 except ImportError:
     pass
 import tensorflow as tf
+
 from eval_dataframe import write_predictions_by_epoch
 from src.model import crnn_fn
 from src.data_handler import make_input_fn
 from src.data_handler import preprocess_image_for_prediction
-
 from src.config import Params, import_params_from_json
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train the model according to the specified config in the JSON. '
@@ -43,7 +42,6 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = parameters.gpu
     config_sess = tf.ConfigProto()
     config_sess.gpu_options.allow_growth = True
-
 
     # Config estimator
     est_config = tf.estimator.RunConfig().replace(
@@ -79,9 +77,9 @@ if __name__ == '__main__':
                                )
             print('Eval done')
 
-
             estimator.export_savedmodel(os.path.join(parameters.output_model_dir, 'export'),
-                                preprocess_image_for_prediction(fixed_height=parameters.input_shape[0], min_width=10))
+                                        preprocess_image_for_prediction(fixed_height=parameters.input_shape[0],
+                                                                        min_width=10))
 
     except KeyboardInterrupt:
         print('Interrupted')

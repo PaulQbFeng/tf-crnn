@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 __author__ = 'cipri-tom'
 
-import tensorflow as tf
 import numpy as np
-from src.elastic_helpers import gaussian_filter_tf, sample, ImageSample, tf_distortion_maps, normalize_text
-from .config import Params, CONST
-from typing import Tuple
-import time
+import tensorflow as tf
 
+from typing import Tuple
+from .config import CONST
 from functools import partial
+from src.helpers import tf_distortion_maps
+
 
 feature_spec = {
     'image_raw': tf.FixedLenFeature([], tf.string),
     'label': tf.FixedLenFeature([], tf.string),
-    'corpus': tf.FixedLenFeature([],tf.int64)
+    'corpus': tf.FixedLenFeature([], tf.int64)
 }
+
+
 def parse_example(serialized_example, output_shape=None):
     features = tf.parse_single_example(serialized_example, feature_spec)
     # Important step: remove "label" from features!
@@ -108,7 +110,7 @@ def augment_data(image: tf.Tensor) -> tf.Tensor:
 
         image = tf.image.random_brightness(image, max_delta=0.1)
         image = tf.image.random_contrast(image, 0.5, 1.5)
-        #image = tf_distortion_maps(image)  #deformation image by image
+        #image = tf_distortion_maps(image)  # deformation image by image
 
         if image.shape[-1] >= 3:
             image = tf.image.random_hue(image, 0.2)
