@@ -15,7 +15,7 @@
   "num_corpora": 10,
   "output_model_dir": "/mnt/nfs/data/paul/generative/1M_dilgrad_1M_clean_pepper_2019_04_24",
   "csv_delimiter": "\t",
-  "tfrecords_train": "/notbeooks/tfrecords_data/1M_dilgrad_1M_clean_pepper/*",
+  "tfrecords_train": "/notebooks/tfrecords_data/1M_dilgrad_1M_clean_pepper/*",
   "tfrecords_eval": "/notebooks/tfrecords_data/test_set/constat_pred_100_10_types_latin1_noaccent_byreport.tfrecords",
   "alphabet": "letters_digits_extended",
   "alphabet_decoding": "same",
